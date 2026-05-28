@@ -196,22 +196,32 @@ const UnitSelector = () => {
     const selectedUnit = collections.find(
       collection => collection.name === level,
     );
-    const firstSubunitId = selectedUnit
-      ? getCollectionSubunits(selectedUnit, isKanji)[0]?.id
-      : undefined;
+    const subunitsForLevel = selectedUnit
+      ? getCollectionSubunits(selectedUnit, isKanji)
+      : [];
+    const firstSubunitId = subunitsForLevel[0]?.id;
+    const savedSubunitForLevel =
+      persistedCollectionSelection.selectedSubunitByUnit[level];
+    const savedSubunitExists = subunitsForLevel.some(
+      s => s.id === savedSubunitForLevel,
+    );
+    const subunitToRestore =
+      savedSubunitExists && savedSubunitForLevel
+        ? savedSubunitForLevel
+        : firstSubunitId;
 
     if (isKanji) {
       setSelectedKanjiCollection(level as CollectionLevel);
       kanjiSelection.clearKanji();
       kanjiSelection.clearSets();
-      if (firstSubunitId) {
-        setKanjiSubunitForUnit(level, firstSubunitId);
+      if (subunitToRestore) {
+        setKanjiSubunitForUnit(level, subunitToRestore);
       }
       setPersistedCollectionSelection('kanji', {
         selectedCollection: level,
         selectedSubunitByUnit: {
           ...persistedCollectionSelection.selectedSubunitByUnit,
-          ...(firstSubunitId ? { [level]: firstSubunitId } : {}),
+          ...(subunitToRestore ? { [level]: subunitToRestore } : {}),
         },
       });
       return;
@@ -220,14 +230,14 @@ const UnitSelector = () => {
     setSelectedVocabCollection(level);
     vocabSelection.clearVocab();
     vocabSelection.clearSets();
-    if (firstSubunitId) {
-      setVocabSubunitForUnit(level, firstSubunitId);
+    if (subunitToRestore) {
+      setVocabSubunitForUnit(level, subunitToRestore);
     }
     setPersistedCollectionSelection('vocabulary', {
       selectedCollection: level,
       selectedSubunitByUnit: {
         ...persistedCollectionSelection.selectedSubunitByUnit,
-        ...(firstSubunitId ? { [level]: firstSubunitId } : {}),
+        ...(subunitToRestore ? { [level]: subunitToRestore } : {}),
       },
     });
   };
